@@ -1,0 +1,33 @@
+/* Fonte */
+@font-face {
+    font-family: 'Poppins';
+    src: url("./fonts/Poppins-Regular.ttf") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Poppins';
+    src: url("./fonts/Poppins-Bold.ttf") format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+* {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Esconder a barra padrão do Streamlit*/
+.stApp [data-testid="stToolbar"]{
+    display:none;
+}
+
+/* Títulos */
+h2, h3 {
+    color: #14C276;
+}
+
+
+
+
+
+
