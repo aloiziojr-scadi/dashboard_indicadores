@@ -60,7 +60,6 @@ param_token = {
     "x-access-token": token
 }
 safras = obter_registros(url_safras, param_token)
-
 df_safras = pd.DataFrame(safras, columns = ["safra"])
 
 # Adicionando uma nova coluna formatada
@@ -69,9 +68,6 @@ df_safras['safra_formatada'] = df_safras['safra'].astype(str).str[:2] + '/' + df
 with st.sidebar.expander('Safras'):
     filtro_safras = st.selectbox('Selecione', options = df_safras["safra_formatada"], placeholder = 'Opções')
     safra_selecionada = filtro_safras.replace("/", "")
-
-# if filtro_safras:
-#     safra_selecionada = filtro_safras.replace("/", "")
 
 ## Criação da lista do Filtro de Atividades
 url_atividades = obter_url_atividades(url_servidor)
@@ -87,7 +83,6 @@ header_atividades = {
 atividades = obter_registros(url_atividades, header_atividades)
 
 dado_atividades = atividades["atividades"]
-
 lista_atividades = []
 for dado in dado_atividades:
     atividade = {
@@ -118,28 +113,12 @@ with st.spinner("Carregando dados... "):
     ## Exibindo Subtítulo
     coluna_subtitulo_1, coluna_subtitulo_2 = st.columns([3,1])
     with coluna_subtitulo_1:
-        
         st.subheader(f"Safra: {filtro_safras}")
-        #coluna_card_1, coluna_card_2, coluna_card_3 = st.columns(3)
-
-        # with coluna_card_1:
-        #     texto_area = f"Por {df_atividades.loc[0, 'desc_unidade_area']} | Área {locale.currency(df_atividades.loc[0, 'area_total'], symbol = False, grouping = True)} {df_atividades.loc[0, 'unidade_area']}"
-        #     valor_area = locale.currency(df_atividades.loc[0, 'despesa_area'], grouping = True)
-        #     st.text(texto_area)
-        #     st.metric('Despesas', value = valor_area)
-        # with coluna_card_2:
-        #     texto_unidade = f"Por {df_atividades.loc[0, 'desc_unidade']} | Prod. {locale.currency(df_atividades.loc[0, 'produtividade'], symbol = False, grouping = True)} {df_atividades.loc[0, 'unidade']}"
-        #     valor_unidade = locale.currency(df_atividades.loc[0, 'despesa_unidade'], grouping = True)
-        #     st.text(texto_unidade)
-        #     st.metric('Despesas', value = valor_unidade)
+        
     with coluna_subtitulo_2:
         st.subheader(filtro_atividade)
         
-        
-
     codigo_atividade = df_atividades.loc[0, 'cod_atividade']
-
-    #{  "safra": "2223",  "codAtividade": "01",  "nroMaximoSecoes": 7}
     param_indicadores = {
         "safra": safra_selecionada,  
         "codAtividade": codigo_atividade,  
@@ -171,11 +150,13 @@ with st.spinner("Carregando dados... "):
 
         for dado_sub in dado['itens']['contas']:
             item = {
+                "rotulo": dado['descricao'],
                 "codigo_conta": dado['codigo'],
                 "descricao_conta": dado['descricao'],
                 "codigo_item": dado_sub['codigo'],
                 "descricao_item": dado_sub['descricao'],
                 "moeda": dado_sub['moeda'],
+                "percentual_geral": dado_sub['percentualGeral'],
                 "percentual_grupo": dado_sub['percentualGrupo'],
                 "valor": dado_sub['valor'],
                 "tipo_conta": "CONTA"
@@ -183,11 +164,13 @@ with st.spinner("Carregando dados... "):
             lista_itens.append(item)
         for dado_sub in dado['itens']['outros']["contas"]:
             item = {
+                "rotulo": dado['descricao'],
                 "codigo_conta": dado['codigo'],
                 "descricao_conta": dado['descricao'],
                 "codigo_item": dado_sub['codigo'],
                 "descricao_item": dado_sub['descricao'],
                 "moeda": dado_sub['moeda'],
+                "percentual_geral": dado_sub['percentualGeral'],
                 "percentual_grupo": dado_sub['percentualGrupo'],
                 "valor": dado_sub['valor'],
                 "tipo_conta": "OUTROS"
@@ -197,7 +180,7 @@ with st.spinner("Carregando dados... "):
     conta_principal_outros = indicadores['outros']
     conta_outros = {
         "codigo_conta": "00",
-        "descricao_conta": conta_principal_outros['descricao'],
+        "descricao_conta": conta_principal_outros['descricao'].upper(),
         "moeda": conta_principal_outros['moeda'],
         "percentual_grupo": conta_principal_outros['percentualGrupo'],
         "valor": conta_principal_outros['valor']
@@ -207,11 +190,13 @@ with st.spinner("Carregando dados... "):
     for dado_outros in conta_principal_outros['contas']:
         for dado_sub in dado_outros['itens']['contas']:
             item = {
+                "rotulo": "OUTROS",
                 "codigo_conta": dado_outros['codigo'],
                 "descricao_conta": dado_outros['descricao'],
                 "codigo_item": dado_sub['codigo'],
                 "descricao_item": dado_sub['descricao'],
                 "moeda": dado_sub['moeda'],
+                "percentual_geral": dado_sub['percentualGeral'],
                 "percentual_grupo": dado_sub['percentualGrupo'],
                 "valor": dado_sub['valor'],
                 "tipo_conta": "OUTROS CONTA"
@@ -219,11 +204,13 @@ with st.spinner("Carregando dados... "):
             lista_itens.append(item)
         for dado_sub in dado_outros['itens']['outros']["contas"]:
             item = {
+                "rotulo": "OUTROS",
                 "codigo_conta": dado_outros['codigo'],
                 "descricao_conta": dado_outros['descricao'],
                 "codigo_item": dado_sub['codigo'],
                 "descricao_item": dado_sub['descricao'],
                 "moeda": dado_sub['moeda'],
+                "percentual_geral": dado_sub['percentualGeral'],
                 "percentual_grupo": dado_sub['percentualGrupo'],
                 "valor": dado_sub['valor'],
                 "tipo_conta": "OUTROS OUTROS"
@@ -232,27 +219,14 @@ with st.spinner("Carregando dados... "):
 
     df_contas_principais = pd.DataFrame(lista_contas_principais)
 
-    #df_contas_principais['valor'] = df_contas_principais['valor'].apply(lambda x: locale.currency(x, symbol = False, grouping=True))
     df_contas_principais['valor_formatado'] = df_contas_principais.apply(lambda x: f"{x['moeda']} {locale.currency(x['valor'], symbol = False, grouping=True)}", axis = 1)
-    df_contas_principais['texto_completo'] = df_contas_principais.apply(lambda x: f"{x['descricao_conta'].upper()}<br>{x['percentual_grupo']:.1f}%<br>{x['valor_formatado']}", axis=1)
-
-
-    fig_contas_principais = px.pie(df_contas_principais, values = 'valor', names = 'texto_completo', hole = .7)
-    #fig_contas_principais.update_traces(textposition='outside', textinfo='value+percent+label')
-    fig_contas_principais.update_traces(textinfo='none', customdata = df_contas_principais["descricao_conta"], hovertemplate = "%{customdata}")
-    fig_contas_principais.update_layout(title = 'Despesas Gerais', showlegend = True)
+    df_contas_principais['texto_completo'] = df_contas_principais.apply(lambda x: f"{x['descricao_conta'].upper()}<br>{x['percentual_grupo']:.2f}%<br>{x['valor_formatado']}", axis=1)
+    fig_contas_principais = px.pie(df_contas_principais, values = 'valor', names = 'texto_completo', hole = .5)
+    fig_contas_principais.update_traces(textinfo='none', customdata = df_contas_principais["texto_completo"], hovertemplate = "%{customdata}")
+    fig_contas_principais.update_layout(title='Despesas Gerais', showlegend=True, legend=dict(x=1, y=0.5, traceorder='normal', font=dict(size=12)), margin=dict(l=0, r=150, t=40, b=0))
 
     # Adicionar o total no meio
-    fig_contas_principais.add_annotation(
-        text=total_geral,
-        showarrow=False,
-        font=dict(size=20),
-        x=0.5,
-        y=0.5,
-        xref="paper",
-        yref="paper"
-    )
-    
+    fig_contas_principais.add_annotation(text=total_geral, showarrow=False, font=dict(size=20), x=0.5, y=0.5, xref="paper", yref="paper")
     
     with st.container():
         coluna_principal_1, coluna_principal_2 = st.columns([3,1])
@@ -268,10 +242,35 @@ with st.spinner("Carregando dados... "):
             valor_unidade = locale.currency(df_atividades.loc[0, 'despesa_unidade'], grouping = True)
             st.text(texto_unidade)
             st.metric('Despesas', value = valor_unidade)
-    #st.dataframe(df_contas_principais)
+
+    with st.container():
+        with st.expander('Dados'):
+            df_itens = pd.DataFrame(lista_itens)
+            filtro_itens = st.selectbox('Filtro', options = ['TODOS'] + list(df_itens['rotulo'].unique()), placeholder = 'Opções')
+            if filtro_itens != 'TODOS':
+                df_itens = df_itens[df_itens['rotulo'] == filtro_itens]
+                atividade_selecionada = df_contas_principais[df_contas_principais['descricao_conta'] == filtro_itens].copy().reset_index()
+                st.text(atividade_selecionada.loc[0, 'valor_formatado'])
+                st.text(locale.currency(atividade_selecionada.loc[0, 'percentual_grupo'], grouping = True, symbol = False) + "%")
+
+            df_itens['texto_completo'] = df_itens.apply(
+                lambda x: f"{x['rotulo']} - {x['descricao_conta']} - {x['descricao_item']}" 
+                if x['rotulo'] == 'OUTROS' 
+                else f"{x['descricao_conta']} - {x['descricao_item']}", axis=1
+            )
+            df_itens['valor_formatado'] = df_itens.apply(lambda x: f"{x['moeda']} {locale.currency(x['valor'], symbol = False, grouping=True)}", axis = 1)
+            df_itens['percentual_grupo_formatado'] = df_itens.apply(lambda x: f"{locale.currency(x['percentual_grupo'], symbol = False, grouping=True)}%", axis = 1)
+            df_itens['percentual_geral_formatado'] = df_itens.apply(lambda x: f"{locale.currency(x['percentual_geral'], symbol = False, grouping=True)}%", axis = 1)
+            
+            tabela_itens = df_itens[['texto_completo', 'percentual_grupo_formatado', 'percentual_geral_formatado', 'valor_formatado']].copy()
+            tabela_itens.rename(
+                columns = {
+                    "texto_completo": "Descrição", 
+                    "valor_formatado": "Valor", 
+                    "percentual_grupo_formatado": "Percentual do Grupo", 
+                    "percentual_geral_formatado": "Percentual Geral"
+                }, inplace = True
+            )
+            
+            st.dataframe(tabela_itens, hide_index = True, use_container_width = True)
     
-    # st.write(lista_contas_principais)
-    # st.write(lista_itens)
-    # st.write(indicadores)
-
-
