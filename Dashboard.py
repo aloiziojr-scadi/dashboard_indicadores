@@ -250,8 +250,11 @@ with st.spinner("Carregando dados... "):
             if filtro_itens != 'TODOS':
                 df_itens = df_itens[df_itens['rotulo'] == filtro_itens]
                 atividade_selecionada = df_contas_principais[df_contas_principais['descricao_conta'] == filtro_itens].copy().reset_index()
-                st.text(atividade_selecionada.loc[0, 'valor_formatado'])
-                st.text(locale.currency(atividade_selecionada.loc[0, 'percentual_grupo'], grouping = True, symbol = False) + "%")
+                coluna_dados_1, coluna_dados_2 = st.columns(2)
+                with coluna_dados_1:
+                    st.metric(label = 'Total', value = atividade_selecionada.loc[0, 'valor_formatado'])
+                with coluna_dados_2:
+                    st.metric(label = 'Percentual', value = locale.currency(atividade_selecionada.loc[0, 'percentual_grupo'], grouping = True, symbol = False) + "%")
 
             df_itens['texto_completo'] = df_itens.apply(
                 lambda x: f"{x['rotulo']} - {x['descricao_conta']} - {x['descricao_item']}" 
