@@ -255,7 +255,8 @@ with st.spinner("Carregando dados... "):
                     st.metric(label = 'Total', value = atividade_selecionada.loc[0, 'valor_formatado'])
                 with coluna_dados_2:
                     st.metric(label = 'Percentual', value = locale.currency(atividade_selecionada.loc[0, 'percentual_grupo'], grouping = True, symbol = False) + "%")
-
+            else:
+                st.metric(label = 'Total', value = total_geral)
             df_itens['texto_completo'] = df_itens.apply(
                 lambda x: f"{x['rotulo']} - {x['descricao_conta']} - {x['descricao_item']}" 
                 if x['rotulo'] == 'OUTROS' 
